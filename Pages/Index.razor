@@ -1,7 +1,33 @@
 ﻿@page "/"
+@using Blazor.Extensions
+@using Blazor.Extensions.Canvas.WebGL
 
-<h1>Hello, world!</h1>
+<h1>Blazoroids 3d</h1>
 
-Welcome to your new app.
+<BECanvas Width="600" Height="600"
+		  @ref="canvas"
+		  OnMouseMove="(e) => MouseMove(e)" />
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+@code {
+	private WebGLContext context;
+	private double mouseX;
+	private double mouseY;
+
+	protected BECanvasComponent canvas;
+
+	protected override async Task OnAfterRenderAsync(bool firstRender)
+	{
+		context = await canvas.CreateWebGLAsync();
+
+		float red = (float)Math.Clamp(mouseX / canvas.Width, 0, 1);
+		float blue = (float)Math.Clamp(mouseY / canvas.Height, 0, 1);
+		await context.ClearColorAsync(red, 0.5f, blue, 1);
+		await context.ClearAsync(BufferBits.COLOR_BUFFER_BIT);
+	}
+
+	private void MouseMove(MouseEventArgs e)
+	{
+		mouseX = e.ClientX;
+		mouseY = e.ClientY;
+	}
+}
